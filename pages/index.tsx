@@ -2,6 +2,7 @@ import { ConnectWallet, useAddress, useContract, useOwnedNFTs, useTokenBalance }
 import styles from "../styles/Home.module.css";
 import { NextPage } from "next";
 import { NFT_CONTRACT_ADDRESS, TOKEN_CONTRACT_ADDRESS } from "../constans/addresses";
+import GooglePayButton from "@google-pay/button-react";
 
 const Home: NextPage = () => {
   const address = useAddress();
@@ -33,7 +34,57 @@ const Home: NextPage = () => {
               ownedNFTs && ownedNFTs.length > 0 ? (
                 <p>Total NFTs Owned: {ownedNFTs.length} </p>
               ) : (
-                <p>Total Owned NFTs: 0 </p>
+                <div>
+                  <p>Total Owned NFTs: 0 </p>
+                  <GooglePayButton 
+                    environment="TEST"
+                    paymentRequest={{
+                      apiVersion: 2,
+                      apiVersionMinor: 0,
+                      allowedPaymentMethods: [
+                        {
+                          type: 'CARD',
+                          parameters: {
+                            allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+                            allowedCardNetworks: ['MASTERCARD', 'VISA'],
+                          },
+                          tokenizationSpecification: {
+                            type: 'PAYMENT_GATEWAY',
+                            parameters: {
+                              gateway: 'example',
+                              gatewayMerchantId: 'exampleGatewayMerchantId',
+                            }
+                          },
+                        }
+                      ],
+                      merchantInfo: {
+                        merchantId: '1234567890123456789',
+                        merchantName: 'Demo Merchant'
+                      },
+                      transactionInfo: {
+                        totalPriceStatus: 'FINAL',
+                        totalPriceLabel: 'Total',
+                        totalPrice: '1',
+                        currencyCode: 'USD',
+                        countryCode: 'US'
+                      },
+                      callbackIntents: ['PAYMENT_AUTHORIZATION'],
+                    }}
+                    onLoadPaymentData={paymentRequest => {
+                      console.log('Success', paymentRequest)
+                    }}
+                    onPaymentAuthorized={paymentData => {
+                      console.log('Payment Authorized Success', paymentData)
+                      return { transactionState: 'SUCCESS' }
+                    }}
+                    //existingPaymentMethodRequired='false'
+                    buttonColor='black'
+                    buttonType="buy"
+                  />
+                </div>
+                
+
+                
               )
             ) : (
               <p>Loading...</p>
